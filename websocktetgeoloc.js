@@ -1,4 +1,4 @@
-var serveur= require('serveur');
+var serveur= require('server');
 
 serveur.serveur();
 

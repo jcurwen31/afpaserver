@@ -1,26 +1,22 @@
 var http = require('http');
-//var fs = require('fs');
 var request=require('request');
 const port = 8080;
 
 // creation du serveur http
 var server = http.createServer(function(req, res) {
  
-        res.end("<h1> toto </h1>");
+        res.end("<h1>Bienvenu sur le serveur de websocket </h1>");
     });
 
 // creation du websocket basé sur le serveur http ci dessus
 var io = require('socket.io').listen(server) 
-
-
-
 
 exports.serveur=function(){
 // Chargement du fichier index.html affiché au client
 
 server.listen(port,  () => { 
     console.log("Server linstening on ", port);
-    ;
+    
 });
 }
 // Chargement de socket.io
@@ -39,33 +35,20 @@ io.sockets.on('connection', function (socket, id) {
     });
 
     // Dès qu'on reçoit un "message" (clic sur le bouton), on le note dans la console
-    
-    
-    /* socket.on('message', function (message) {
-        // On récupère le pseudo de celui qui a cliqué dans les variables de session
-        console.log(socket.id + ' me parle ! Il me dit : ' + message); */
-        
        
-
-
         socket.on('userPosition', function(coordo) {
             console.log(coordo);
-           
-            
-            var payload = JSON.parse('{"MysqlId":"02","pseudo":"Munick","avatar":"http://avatar.fr/03.jpg","coordinates":{"longitude":"1.45245","latitude":"43.6191232"}}');
+
+            // pour debug
+
+            //var payload = JSON.parse('{"MysqlId":"02","pseudo":"Munick","avatar":"http://avatar.fr/03.jpg","coordinates":{"longitude":"1.45245","latitude":"43.6191232"}}');
+            // pour prod
+            var payload = JSON.parse(coordo);
+
             postUser(payload, socket);
-            //getUser(socket);
-             //socket.broadcast.emit(coordo);
+
         });
-     
-
-   
 });}
-
-
-//server.listen(8080);
-
-
 
 
 var getAll=function(socket){
@@ -76,8 +59,9 @@ var getAll=function(socket){
     }
     
     // Configure the request
+
     var gets = {
-        url: 'http://nodejs2.afpa-balma.fr/gps/select/all/last',
+        url: 'http://localhost:8082/gps/select/all/last',
         method: 'GET',
         headers: headers,
        
@@ -88,14 +72,13 @@ var getAll=function(socket){
         if (!error && response.statusCode == 200) {
             // Print out the response body
             console.dir(JSON.parse(body));
-           socket.broadcast.emit('userLastPosition', body);
+           socket.broadcast.emit('usersLastPosition', body);
         }
     })
     
     };
-    
 
-
+// récupère le json en fonction du pseudo
 var getUser=function(socket){
 
     var headers = {
@@ -105,7 +88,7 @@ var getUser=function(socket){
     
     // Configure the request
     var gets = {
-        url: 'http://nodejs2.afpa-balma.fr/gps/select/'+pseudo+'',
+        url: 'http://localhost:8082/gps/select/'+pseudo+'',
         method: 'GET',
         headers: headers,
        
@@ -122,10 +105,8 @@ var getUser=function(socket){
     
     };
     
-
+    // insère une position en fonction de ce que recoit le websocket
     var postUser=function(payload, socket){
-
-    //var payload = JSON.parse('{"MysqlId":"02","pseudo":"Munick","avatar":"http://avatar.fr/03.jpg","coordinates":{"longitude":"1.45245","latitude":"43.6191232"}}');
 
     var headers = {
         'User-Agent':       'Super Agent/0.0.1',
